@@ -26,6 +26,8 @@ public class ObserverImpl extends UnicastRemoteObject implements ObserverRI {
     public ObserverGuiClient gui;
 
 
+    //boas alex
+
     private SetupContextRMI contextRMI;
 
     public ObserverImpl(String username, SubjectRI subjectRI, State lastObserverState, ObserverGuiClient gui) throws RemoteException {
