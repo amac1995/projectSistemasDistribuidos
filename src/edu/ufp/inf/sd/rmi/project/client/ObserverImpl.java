@@ -27,6 +27,7 @@ public class ObserverImpl extends UnicastRemoteObject implements ObserverRI {
 
 
     //boas alex
+    //boas andre
 
     private SetupContextRMI contextRMI;
 
