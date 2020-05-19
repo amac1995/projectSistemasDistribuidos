@@ -1,10 +1,12 @@
 package edu.ufp.inf.sd.rmi.project.server;
 
-public class User {
-    String username;
-    String password;
-    Double credits;
-    Integer taskscompleted;
+import java.io.Serializable;
+
+public class User implements Serializable {
+    private String username;
+    private String password;
+    private Double credits;
+    private Integer taskscompleted;
 
     public User(String username, String password) {
         this.username = username;

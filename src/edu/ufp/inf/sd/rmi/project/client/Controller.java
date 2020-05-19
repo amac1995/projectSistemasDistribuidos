@@ -1,4 +1,4 @@
 package edu.ufp.inf.sd.rmi.project.client;
 
-public class ObserverGuiClient {
+public class Controller {
 }

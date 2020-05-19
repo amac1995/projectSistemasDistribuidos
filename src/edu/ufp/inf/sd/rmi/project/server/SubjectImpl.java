@@ -6,52 +6,46 @@ import java.rmi.server.UnicastRemoteObject;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
+public class SubjectImpl extends UnicastRemoteObject implements SubjectRI{
 
-public class SubjectImpl extends UnicastRemoteObject implements SubjectRI {
+    private State subjectState;
 
-    public State state;
-    public ArrayList<ObserverRI> observers= new ArrayList<>();
-    // Uses RMI-default sockets-based transport
-    // Runs forever (do not passivates) - Do not needs rmid (activation deamon)
-    // Constructor must throw RemoteException due to export()
-    public SubjectImpl() throws RemoteException {
-        // Invokes UnicastRemoteObject constructor which exports remote object
+    private ArrayList<ObserverRI> observers = new ArrayList<>();
+
+
+    protected SubjectImpl() throws RemoteException {
         super();
-        this.state=new State("","");
+        this.subjectState = new State("","");
     }
 
     @Override
-    public void attach(ObserverRI o) throws RemoteException {
-        if(!this.observers.contains(o)){
-             this.observers.add(o);
-        }
+    public void attach(ObserverRI obsRI) {
+        if(!this.observers.contains(obsRI)) this.observers.add(obsRI);
     }
 
     @Override
-    public void dettach(ObserverRI o) throws RemoteException{
-        this.observers.remove(o);
+    public void detach(ObserverRI obsRI) {
+        this.observers.remove(obsRI);
     }
 
     @Override
-    public State getState() throws RemoteException{
-        return this.state;
+    public State getState() {
+        return this.subjectState;
     }
 
     @Override
-    public void setState(State s) throws RemoteException{
-        this.state=s;
+    public void setState(State state) {
+        this.subjectState = state;
         this.notifyAllObservers();
     }
 
-
-    public void notifyAllObservers(){
-        for (ObserverRI ob: observers) {
-            try {
-                ob.update();
-            } catch (RemoteException e) {
-                e.printStackTrace();
+    public void notifyAllObservers() {
+        for(ObserverRI obs : observers){
+            try{
+                obs.update();
+            } catch (RemoteException ex){
+                System.out.println(ex.toString());
             }
         }
-
     }
 }

@@ -17,7 +17,7 @@ public class DBMockup {
      */
     public DBMockup() {
         users = new ArrayList<>();
-        users.add(new User("guest", "ufp"));
+        users.add(new User("31202", "31202"));
     }
 
     /**
@@ -40,12 +40,13 @@ public class DBMockup {
      * @return
      */
     public boolean exists(String u, String p) {
-        for (User usr : this.users) {
+        /*for (User usr : this.users) {
             if (usr.getUsername().compareTo(u) == 0 && usr.getPassword().compareTo(p) == 0) {
                 return true;
             }
         }
-        return false;
-        //return ((u.equalsIgnoreCase("guest") && p.equalsIgnoreCase("ufp")) ? true : false);
+        return false;*/
+        System.out.println(u + " " + p);
+        return (u.equalsIgnoreCase("31202") && p.equalsIgnoreCase("31202"));
     }
 }

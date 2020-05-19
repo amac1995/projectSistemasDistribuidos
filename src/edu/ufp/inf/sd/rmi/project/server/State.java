@@ -9,19 +9,14 @@
 package edu.ufp.inf.sd.rmi.project.server;
 
 import java.io.Serializable;
-
-/**
- * 
- * @author rui
- */
 public class State implements Serializable {
     private String msg;
     private String id;
 
     /**
-     * 
+     *
      * @param id
-     * @param m 
+     * @param m
      */
     public State(String id, String m) {
         this.id = id;
@@ -29,24 +24,24 @@ public class State implements Serializable {
     }
 
     /**
-     * 
-     * @return 
+     *
+     * @return
      */
     public String getId() {
         return id;
     }
 
     /**
-     * 
-     * @return 
+     *
+     * @return
      */
     public String getInfo(){
         return this.msg;
     }
 
     /**
-     * 
-     * @param m 
+     *
+     * @param m
      */
     public void setInfo(String m){
         this.msg = m;

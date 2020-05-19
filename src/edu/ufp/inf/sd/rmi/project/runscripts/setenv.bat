@@ -15,7 +15,7 @@
 @Set USERNAME=alexa
 
 @Set WORKDRIVE=D
-@Set JDK=C:\Program Files\Java\jdk-11.0.6
+@Set JDK=C:\Users\alexa\.jdks\openjdk-14.0.1
 @REM These vars will be used to check the output folder (whereto classes are generated)
 @SET NETBEANS=NetBeans
 @SET INTELLIJ=IntelliJ
@@ -23,18 +23,17 @@
 @REM @Set CURRENT_IDE=%NETBEANS%
 
 @REM ==== JAVA NAMING STUFF ====
-@Set JAVAPROJ_NAME=SDis
+@Set JAVAPROJ_NAME=SD_Project
 @set JAVAPROJ=%WORKDRIVE%:\Universidade\Licenciatura\5Ano\SistemasDistribuidos\\%JAVAPROJ_NAME%
 @Set PACKAGE=project
 @Set PACKAGE_PREFIX=edu.ufp.inf.sd.rmi
 @Set PACKAGE_PREFIX_FOLDERS=edu/ufp/inf/sd/rmi
 @Set SERVICE_NAME_ON_REGISTRY=ProjectService
-@Set CLIENT_CLASS_PREFIX=ProjectElementsFolders
-@Set SERVER_CLASS_PREFIX=ElementsFolders
 @Set CLIENT_CLASS_POSTFIX=Client
 @Set SERVER_CLASS_POSTFIX=Server
 @Set SETUP_CLASS_POSTFIX=Setup
 @Set SERVANT_IMPL_CLASS_POSTFIX=Impl
+@REM OBSERVER_CLASS_PREFIX=ObserverImpl
 
 
 @REM ==== NETWORK STUFF ====

@@ -25,7 +25,7 @@ public class FactoryImpl extends UnicastRemoteObject implements FactoryRI {
 
     @Override
     public boolean register(String uname, String pw) throws RemoteException {
-        if(!db.exists(uname,pw)){
+        if(db.exists(uname,pw)){
             db.register(uname,pw);
             return true;
         }
@@ -35,7 +35,8 @@ public class FactoryImpl extends UnicastRemoteObject implements FactoryRI {
 
     @Override
     public SessionRI login(String uname, String pw) throws RemoteException {
-        if(!db.exists(uname,pw)){
+        System.out.println(uname + "  " + pw);
+        if(db.exists(uname,pw)){
             if (!sessions.containsKey(uname)) {
                 return new SessionImpl(db);
             } else {
