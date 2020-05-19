@@ -1,27 +1,25 @@
 package edu.ufp.inf.sd.rmi.project.client;
 
-import edu.ufp.inf.sd.rmi.project.server.FactoryRI;
-import edu.ufp.inf.sd.rmi.project.server.SessionRI;
+import edu.ufp.inf.sd.rmi.project.server.*;
 import edu.ufp.inf.sd.rmi.util.rmisetup.SetupContextRMI;
 
+import javax.sound.midi.Soundbank;
+import java.io.Serializable;
 import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Client {
 
-    /**
-     * Context for connecting a RMI client to a RMI Servant
-     */
     private SetupContextRMI contextRMI;
-    /**
-     * Remote interface that will hold the Servant proxy
-     */
+    private State lastObserverState;
     private FactoryRI factoryRI;
+    ArrayList<Task> taskArrayList = new ArrayList<>();
 
     public static void main(String[] args) {
         if (args != null && args.length < 2) {
@@ -46,6 +44,7 @@ public class Client {
             String serviceName = args[2];
             //Create a context for RMI setup
             contextRMI = new SetupContextRMI(this.getClass(), registryIP, registryPort, new String[]{serviceName});
+
         } catch (RemoteException e) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, e);
         }
@@ -76,6 +75,7 @@ public class Client {
     private void playService() {
         try {
             Scanner scanner = new Scanner(System.in);
+            System.out.println("Insira nome de utilizador e password");
             String user = scanner.nextLine();
             String pass = scanner.nextLine();
             SessionRI sessionRI = this.factoryRI.login(user, pass);
@@ -83,11 +83,64 @@ public class Client {
                 System.out.println("Login com sucesso");
             } else {
                 System.out.println("Login sem sucesso");
+                System.exit(0);
             }
+            //Observer attach
+            this.factoryRI.attach(this);
+            this.update();
+            //sessionRI.createTaskGroup(40, "1234567890");
+            //taskArrayList = sessionRI.listTaskGroups();
+            while(true){
+                System.out.println(
+                        "Escolha a opção:\n" +
+                        "1 -> Criar tarefa\n" +
+                        "2 -> Listar tarefas\n" +
+                        "3 -> Apagar tarefas\n");
+                int input = scanner.nextInt();
+                switch (input){
+                    case 1:
+                        System.out.println("Insira o numero de creditos e a hash:");
+                        int credit = scanner.nextInt();
+                        String hash = scanner.nextLine();
+                        sessionRI.createTaskGroup(credit, hash);
+                        taskArrayList = sessionRI.listTaskGroups();
+                        System.out.println("Tarefa criada");
+                        break;
+                    case 2:
+                        for (Task task: taskArrayList) {
+                            System.out.println("Tarefa numero: " + task.getTaskID() + " equivale a " + task.getCreditos() + "\nUtilizadores:\n");
+                            for (User u: task.getUsers()){
+                                System.out.println("Nome: " + u.getUsername() + " com " + u.getCredits() + " creditos e " + u.getTaskscompleted() + " tarefas completas.");
+                            }
+                        }
+                        break;
+                    case 3:
+                        System.out.println("Insira o id da tarefa a eliminar");
+                        Integer taskid = scanner.nextInt();
+                        sessionRI.deleteTaskGroup(taskid);
+                        System.out.println(sessionRI.deleteTaskGroup(taskid)?"Erro a apagar a tarefa":"Tarefa apagada");
+                        break;
+                    case 4:
+                        this.update();
+                        break;
+                    default:
+                        return;
+                }
 
-            Logger.getLogger(this.getClass().getName()).log(Level.INFO, "going to finish, bye. ;)");
+            }
+            //Logger.getLogger(this.getClass().getName()).log(Level.INFO, "going to finish, bye. ;)");
         } catch (RemoteException | IllegalArgumentException ex) {
             Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public void update() throws RemoteException{
+        this.lastObserverState=factoryRI.getState();
+        taskArrayList = this.lastObserverState.getArrayList();
+        //this.chatFrame.updateTextArea();
+    }
+
+    protected State getLastObserverState(){
+        return this.lastObserverState;
     }
 }

@@ -1,5 +1,6 @@
 package edu.ufp.inf.sd.rmi.project.server;
 
+import edu.ufp.inf.sd.rmi.project.client.Client;
 import edu.ufp.inf.sd.rmi.project.client.ObserverRI;
 
 import java.rmi.server.UnicastRemoteObject;
@@ -10,22 +11,22 @@ public class SubjectImpl extends UnicastRemoteObject implements SubjectRI{
 
     private State subjectState;
 
-    private ArrayList<ObserverRI> observers = new ArrayList<>();
+    private ArrayList<Client> clients = new ArrayList<>();
 
 
     protected SubjectImpl() throws RemoteException {
         super();
-        this.subjectState = new State("","");
+        this.subjectState = new State(null);
     }
 
     @Override
-    public void attach(ObserverRI obsRI) {
-        if(!this.observers.contains(obsRI)) this.observers.add(obsRI);
+    public void attach(Client client) {
+        if(!this.clients.contains(client)) this.clients.add(client);
     }
 
     @Override
-    public void detach(ObserverRI obsRI) {
-        this.observers.remove(obsRI);
+    public void detach(Client client) {
+        this.clients.remove(client);
     }
 
     @Override
@@ -34,15 +35,16 @@ public class SubjectImpl extends UnicastRemoteObject implements SubjectRI{
     }
 
     @Override
-    public void setState(State state) {
+    public void setState(State state) throws RemoteException {
         this.subjectState = state;
         this.notifyAllObservers();
     }
 
+
     public void notifyAllObservers() {
-        for(ObserverRI obs : observers){
+        for(Client client: clients){
             try{
-                obs.update();
+                client.update();
             } catch (RemoteException ex){
                 System.out.println(ex.toString());
             }

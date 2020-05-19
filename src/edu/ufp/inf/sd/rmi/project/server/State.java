@@ -1,49 +1,22 @@
-/**
- * <p>Title: Projecto SD</p>
- * <p>Description: Projecto apoio aulas SD</p>
- * <p>Copyright: Copyright (c) 2011</p>
- * <p>Company: UFP </p>
- * @author Rui Moreira
- * @version 2.0
- */
 package edu.ufp.inf.sd.rmi.project.server;
 
 import java.io.Serializable;
-public class State implements Serializable {
-    private String msg;
-    private String id;
+import java.util.ArrayList;
 
-    /**
-     *
-     * @param id
-     * @param m
-     */
-    public State(String id, String m) {
-        this.id = id;
-        this.msg = m;
+public class State implements Serializable {
+    private Integer id = 0;
+    private ArrayList<Task> arrayList = new ArrayList<>();
+
+    public State(ArrayList<Task> tasks) {
+        this.id += 1;
+        this.arrayList = tasks;
     }
 
-    /**
-     *
-     * @return
-     */
-    public String getId() {
+    public Integer getId() {
         return id;
     }
 
-    /**
-     *
-     * @return
-     */
-    public String getInfo(){
-        return this.msg;
-    }
-
-    /**
-     *
-     * @param m
-     */
-    public void setInfo(String m){
-        this.msg = m;
+    public ArrayList<Task> getArrayList() {
+        return arrayList;
     }
 }

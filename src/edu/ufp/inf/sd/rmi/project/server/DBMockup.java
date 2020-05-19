@@ -1,5 +1,6 @@
 package edu.ufp.inf.sd.rmi.project.server;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
@@ -8,7 +9,7 @@ import java.util.ArrayList;
  * @author rmoreira
  *
  */
-public class DBMockup {
+public class DBMockup implements Serializable {
 
     private final ArrayList<User> users;// = new ArrayList();
 
@@ -17,7 +18,9 @@ public class DBMockup {
      */
     public DBMockup() {
         users = new ArrayList<>();
-        users.add(new User("31202", "31202"));
+        users.add(new User("alex", "alex"));
+        users.add(new User("andre", "andre"));
+        users.add(new User("barbara", "barbara"));
     }
 
     /**
@@ -40,13 +43,20 @@ public class DBMockup {
      * @return
      */
     public boolean exists(String u, String p) {
-        /*for (User usr : this.users) {
+        for (User usr : this.users) {
             if (usr.getUsername().compareTo(u) == 0 && usr.getPassword().compareTo(p) == 0) {
                 return true;
             }
         }
-        return false;*/
-        System.out.println(u + " " + p);
-        return (u.equalsIgnoreCase("31202") && p.equalsIgnoreCase("31202"));
+        return false;
+    }
+
+    public User getUser(String u, String p){
+        for (User usr : this.users) {
+            if (usr.getUsername().compareTo(u) == 0 && usr.getPassword().compareTo(p) == 0) {
+                return usr;
+            }
+        }
+        return null;
     }
 }

@@ -11,6 +11,8 @@ public class User implements Serializable {
     public User(String username, String password) {
         this.username = username;
         this.password = password;
+        this.credits = 0.0;
+        this.taskscompleted = 0;
     }
 
     public String getUsername() {

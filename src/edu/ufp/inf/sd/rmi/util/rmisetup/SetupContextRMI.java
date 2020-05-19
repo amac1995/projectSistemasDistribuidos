@@ -1,5 +1,6 @@
 package edu.ufp.inf.sd.rmi.util.rmisetup;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;

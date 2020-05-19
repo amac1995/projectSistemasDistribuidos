@@ -98,25 +98,4 @@ public class Server {
         }
     }
 
-    private static void loadProperties() throws IOException {
-
-        Logger.getLogger(Thread.currentThread().getName()).log(Level.INFO, "goig to load props...");
-        // create and load default properties
-        Properties defaultProps = new Properties();
-        FileInputStream in = new FileInputStream("defaultproperties.txt");
-        defaultProps.load(in);
-        in.close();
-
-        BiConsumer<Object, Object> bc = (key, value) ->{
-            System.out.println(key.toString()+"="+value.toString());
-        };
-        defaultProps.forEach(bc);
-
-        // create application properties with default
-        Properties props = new Properties(defaultProps);
-
-        FileOutputStream out = new FileOutputStream("defaultproperties2.txt");
-        props.store(out, "---No Comment---");
-        out.close();
-    }
 }
