@@ -15,6 +15,11 @@ public class SessionImpl implements SessionRI, Serializable {
     }
 
     @Override
+    public void setSubjectRI(SubjectRI subjectRI) {
+        this.subjectRI = subjectRI;
+    }
+
+    @Override
     public ArrayList<Task> listTaskGroups() throws RemoteException {
         return tasksgroup;
     }

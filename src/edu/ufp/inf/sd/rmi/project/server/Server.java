@@ -35,6 +35,7 @@ public class Server {
      * Remote interface that will hold reference to the Servant impl
      */
     private FactoryRI factoryRI;
+    private SubjectRI subjectRI;
 
     public static void main(String[] args) {
         if (args != null && args.length < 3) {
@@ -79,7 +80,7 @@ public class Server {
             if (registry != null) {
                 //============ Create Servant ============
                 factoryRI= new FactoryImpl();
-
+                //subjectRI= new SubjectImpl();
                 //Get service url (including servicename)
                 String serviceUrl = contextRMI.getServicesUrl(0);
                 Logger.getLogger(this.getClass().getName()).log(Level.INFO, "going to rebind service @ {0}", serviceUrl);
@@ -87,6 +88,7 @@ public class Server {
                 //============ Rebind servant ============
                 //Naming.bind(serviceUrl, calculatorRI);
                 registry.rebind(serviceUrl, factoryRI);
+                //registry.rebind(serviceUrl, subjectRI);
                 Logger.getLogger(this.getClass().getName()).log(Level.INFO, "service bound and running. :)");
             } else {
                 //System.out.println("HelloWorldServer - Constructor(): create registry on port 1099");

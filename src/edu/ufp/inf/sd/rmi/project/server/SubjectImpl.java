@@ -14,7 +14,7 @@ public class SubjectImpl extends UnicastRemoteObject implements SubjectRI{
     private ArrayList<Client> clients = new ArrayList<>();
 
 
-    protected SubjectImpl() throws RemoteException {
+    public SubjectImpl() throws RemoteException {
         super();
         this.subjectState = new State(null);
     }

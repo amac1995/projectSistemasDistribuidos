@@ -9,5 +9,6 @@ public interface SessionRI extends Remote {
     public boolean createTaskGroup(Integer credits, String hash) throws RemoteException;
     public boolean pauseTaskGroup(Integer taskID) throws RemoteException;
     public boolean deleteTaskGroup(Integer taskID) throws RemoteException;
+    public void setSubjectRI(SubjectRI subjectRI);
     public void logout() throws RemoteException;
 }

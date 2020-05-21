@@ -52,36 +52,4 @@ public class FactoryImpl extends UnicastRemoteObject implements FactoryRI {
         return null;
     }
 
-    @Override
-    public void attach(Client client) {
-        if(!this.clients.contains(client)) this.clients.add(client);
-    }
-
-    @Override
-    public void detach(Client client) {
-        this.clients.remove(client);
-    }
-
-    @Override
-    public State getState() {
-        return this.subjectState;
-    }
-
-    @Override
-    public void setState(State state) throws RemoteException {
-        this.subjectState = state;
-        this.notifyAllObservers();
-    }
-
-
-    public void notifyAllObservers() {
-        for(Client client: clients){
-            try{
-                client.update();
-            } catch (RemoteException ex){
-                System.out.println(ex.toString());
-            }
-        }
-    }
-
 }
