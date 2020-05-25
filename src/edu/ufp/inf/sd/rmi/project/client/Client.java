@@ -9,12 +9,13 @@ import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Client {
+public class Client extends UnicastRemoteObject implements ObserverRI {
 
     private SetupContextRMI contextRMI;
     private State lastObserverState;
@@ -22,7 +23,7 @@ public class Client {
     private SubjectRI subjectRI;
     ArrayList<Task> taskArrayList = new ArrayList<>();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws RemoteException {
         if (args != null && args.length < 2) {
             System.err.println("usage: java [options] edu.ufp.sd.inf.rmi.edu.ufp.inf.sd.rmi.helloworld.server.HelloWorldClient <rmi_registry_ip> <rmi_registry_port> <service_name>");
             System.exit(-1);
@@ -36,8 +37,10 @@ public class Client {
         }
     }
 
-    public Client(String[] args) {
+    public Client(String[] args) throws RemoteException {
+        super();
         try {
+
             //List ans set args
             SetupContextRMI.printArgs(this.getClass().getName(), args);
             String registryIP = args[0];
@@ -76,10 +79,9 @@ public class Client {
 
     private void playService() {
         try {
-            Scanner scanner = new Scanner(System.in);
             System.out.println("Insira nome de utilizador e password");
-            String user = scanner.nextLine();
-            String pass = scanner.nextLine();
+            String user = System.console().readLine();
+            String pass = System.console().readLine();
             SessionRI sessionRI = this.factoryRI.login(user, pass);
             if (sessionRI != null) {
                 System.out.println("Login com sucesso");
@@ -87,45 +89,60 @@ public class Client {
                 System.out.println("Login sem sucesso");
                 System.exit(0);
             }
-            //Observer attach
-            this.subjectRI = new SubjectImpl();
-            this.subjectRI.attach(this);
-            sessionRI.setSubjectRI(this.subjectRI);
-            //this.update();
             while (true) {
                 System.out.println(
                         "Escolha a opção:\n" +
                                 "1 -> Criar tarefa\n" +
-                                "2 -> Listar tarefas\n" +
-                                "3 -> Apagar tarefas\n" +
-                                "4 -> Update\n");
-                int input = scanner.nextInt();
+                                "2 -> Listar tarefa a trabalhar\n" +
+                                "3 -> Listar tarefas\n" +
+                                "4 -> Pausar tarefa\n" +
+                                "5 -> Apagar tarefas\n" +
+                                "6 -> Update\n");
+                int input = Integer.parseInt(System.console().readLine());
                 switch (input) {
-                    case 1:
-                        System.out.println("Insira o numero de creditos e a hash:");
-                        int credit = scanner.nextInt();
-                        String hash = scanner.nextLine();
-                        sessionRI.createTaskGroup(credit, hash);
-                        this.taskArrayList = sessionRI.listTaskGroups();
-                        System.out.println("Tarefa criada");
+                    case 1: //"1 -> Criar tarefa\n"
+                        if (subjectRI == null) {
+                            System.out.println("Insira o numero de creditos, nome e a hash:");
+                            int credit = Integer.parseInt(System.console().readLine());
+                            String name = System.console().readLine();
+                            String hash = System.console().readLine();
+                            subjectRI = sessionRI.createTaskGroup(credit, name, hash);
+                            subjectRI.attach(this);
+                            System.out.println("Tarefa criada");
+                        } else
+                            System.out.println("[Erro] -> Já está inscrito numa tarefa.");
                         break;
-                    case 2:
-                        for (Task task : this.taskArrayList) {
-                            System.out.println("Tarefa numero: " + task.getTaskID() + " equivale a " + task.getCreditos() + "\nUtilizadores:\n");
-                            for (User u : task.getUsers()) {
-                                System.out.println("Nome: " + u.getUsername() + " com " + u.getCredits() + " creditos e " + u.getTaskscompleted() + " tarefas completas.");
-                            }
+                    case 2: //"3 -> Juntar tarefas\n"
+                        int taskID = Integer.parseInt(System.console().readLine());
+                        subjectRI = sessionRI.joinTaskGroup(taskID);
+                        break;
+                    case 3: //"2 -> Listar tarefa a trabalhar\n"
+                        if (subjectRI != null) {
+                            subjectRI.printTaskInfo();
+                        } else {
+                            System.out.println("[Erro] -> Não está inscrito numa tarefa.");
                         }
                         break;
-                    case 3:
-                        System.out.println("Insira o id da tarefa a eliminar");
-                        Integer taskid = scanner.nextInt();
-                        sessionRI.deleteTaskGroup(taskid);
-                        this.taskArrayList = sessionRI.listTaskGroups();
-                        System.out.println(sessionRI.deleteTaskGroup(taskid) ? "Erro a apagar a tarefa" : "Tarefa apagada");
+                    case 4: //"3 -> Listar tarefas\n"
+                        sessionRI.listTaskGroups();
                         break;
-                    case 4:
-                        this.update();
+                    case 5: //"4 -> Pausar tarefa\n"
+                        if (subjectRI != null) {
+                            subjectRI.pauseTask();
+                        }
+                        System.out.println("Não está inscrito em nenhuma tarefa.");
+                        break;
+                    case 6: //"5 -> Apagar tarefas\n"
+                        System.out.println("Insira o id da tarefa a eliminar");
+                        Integer taskid = Integer.parseInt(System.console().readLine());
+                        subjectRI.detach(this);
+                        subjectRI = null;
+                        System.out.println(sessionRI.deleteTaskGroup(taskid) ? "Tarefa apagada" : "Erro a apagar a tarefa");
+                        break;
+                    case 7: //"6 -> Update\n"
+                        if (subjectRI != null) {
+                            this.update();
+                        }
                         break;
                     default:
                         return;
@@ -138,16 +155,9 @@ public class Client {
         }
     }
 
+    @Override
     public void update() throws RemoteException {
-        this.lastObserverState = this.subjectRI.getState();
-        this.taskArrayList = this.lastObserverState.getArrayList();
-        for (Task task : this.taskArrayList) {
-            System.out.println("Tarefa numero: " + task.getTaskID() + " equivale a " + task.getCreditos() + "\nUtilizadores:\n");
-            for (User u : task.getUsers()) {
-                System.out.println("Nome: " + u.getUsername() + " com " + u.getCredits() + " creditos e " + u.getTaskscompleted() + " tarefas completas.");
-            }
-        }
-        //this.chatFrame.updateTextArea();
+        this.lastObserverState = subjectRI.getState();
     }
 
     protected State getLastObserverState() {

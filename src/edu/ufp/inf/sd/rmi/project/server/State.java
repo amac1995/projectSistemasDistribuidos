@@ -4,19 +4,23 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class State implements Serializable {
-    private Integer id = 0;
-    private ArrayList<Task> arrayList = new ArrayList<>();
+    private String msg;
+    private String id;
 
-    public State(ArrayList<Task> tasks) {
-        this.id += 1;
-        this.arrayList = tasks;
+    public State(String id, String m) {
+        this.id = id;
+        this.msg = m;
     }
 
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
-    public ArrayList<Task> getArrayList() {
-        return arrayList;
+    public String getInfo(){
+        return this.msg;
+    }
+
+    public void setInfo(String m){
+        this.msg = m;
     }
 }

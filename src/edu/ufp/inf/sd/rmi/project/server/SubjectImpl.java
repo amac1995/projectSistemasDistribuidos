@@ -7,26 +7,77 @@ import java.rmi.server.UnicastRemoteObject;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
-public class SubjectImpl extends UnicastRemoteObject implements SubjectRI{
+//Tarefa
+public class SubjectImpl implements SubjectRI{
 
     private State subjectState;
+    private Task task;
 
-    private ArrayList<Client> clients = new ArrayList<>();
+    private ArrayList<ObserverRI> observers = new ArrayList<>();
 
-
-    public SubjectImpl() throws RemoteException {
+    protected SubjectImpl(Integer credits, String name, String hash) throws RemoteException {
         super();
-        this.subjectState = new State(null);
+        this.task = new Task(name, credits);
+        this.subjectState = new State("","");
     }
 
     @Override
-    public void attach(Client client) {
-        if(!this.clients.contains(client)) this.clients.add(client);
+    public void setHashingState() throws RemoteException {
+
     }
 
     @Override
-    public void detach(Client client) {
-        this.clients.remove(client);
+    public void updateHashingState() throws RemoteException {
+
+    }
+
+    @Override
+    public boolean printTaskInfo() throws RemoteException {
+        if(task != null) {
+            System.out.println("Tarefa ID: " + task.getTaskID() + "\n\tNome: " + task.getName() + "\n\tCreditos: " + task.getCreditos() + "\n\tEm pausa: " + task.getPause().toString());
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean finishHash() throws RemoteException {
+        return false;
+    }
+
+    @Override
+    public boolean finishTask() throws RemoteException {
+        return false;
+    }
+
+    @Override
+    public void pauseTask() throws RemoteException {
+        task.setPause(!task.getPause());
+        setState(new State("pause", task.getPause().toString()));
+    }
+
+    @Override
+    public boolean giveUpTask() throws RemoteException {
+        return false;
+    }
+
+    @Override
+    public SubjectRI joinTask() throws RemoteException {
+        return this;
+    }
+
+    public Task getTask() {
+        return task;
+    }
+
+    @Override
+    public void attach(ObserverRI obsRI) {
+        if(!this.observers.contains(obsRI)) this.observers.add(obsRI);
+    }
+
+    @Override
+    public void detach(ObserverRI obsRI) {
+        this.observers.remove(obsRI);
     }
 
     @Override
@@ -35,16 +86,15 @@ public class SubjectImpl extends UnicastRemoteObject implements SubjectRI{
     }
 
     @Override
-    public void setState(State state) throws RemoteException {
+    public void setState(State state) {
         this.subjectState = state;
         this.notifyAllObservers();
     }
 
-
     public void notifyAllObservers() {
-        for(Client client: clients){
+        for(ObserverRI obs : observers){
             try{
-                client.update();
+                obs.update();
             } catch (RemoteException ex){
                 System.out.println(ex.toString());
             }

@@ -17,8 +17,23 @@
             </ScrollPane>
             <TextArea layoutX="14.0" layoutY="278.0" prefHeight="100.0" prefWidth="203.0" promptText="Mensagem..." />
             <Button layoutX="221.0" layoutY="278.0" mnemonicParsing="false" prefHeight="100.0" prefWidth="41.0" text="S&#10;E&#10;N&#10;D" textAlignment="CENTER" wrapText="true" />
+            <TabPane layoutX="16.0" layoutY="14.0" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE">
+              <tabs>
+                <Tab text="Untitled Tab 1">
+                  <content>
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                  </content>
+                </Tab>
+                <Tab text="Untitled Tab 2">
+                  <content>
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                  </content>
+                </Tab>
+              </tabs>
+            </TabPane>
          </children>
       </Pane>
+      <Pane id="Login" fx:id="login" prefHeight="200.0" prefWidth="200.0" />
    </children>
    <columnConstraints>
       <ColumnConstraints />

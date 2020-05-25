@@ -5,28 +5,28 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class Task implements Serializable {
-    ArrayList<User> userArrayList = new ArrayList<>();;
     Integer taskID;
+    String name;
     Integer creditos;
     Boolean pause = false;
 
-    public Task(Integer creditos, User user) {
+    public Task(String name, Integer creditos) {
         Random rand = new Random();
-        this.taskID = rand.nextInt(1000);
+        this.taskID = rand.nextInt(100000);
+        this.name=name;
         this.creditos = creditos;
-        setUsers(user);
-    }
-
-    public ArrayList<User> getUsers() {
-        return userArrayList;
-    }
-
-    public void setUsers(User users) {
-        userArrayList.add(users);
     }
 
     public Integer getTaskID() {
         return taskID;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Integer getCreditos() {

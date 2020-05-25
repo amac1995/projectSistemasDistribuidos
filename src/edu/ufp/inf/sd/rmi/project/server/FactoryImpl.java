@@ -12,10 +12,8 @@ public class FactoryImpl extends UnicastRemoteObject implements FactoryRI {
 
     private DBMockup db;// = new DBMockup();
     //private ThreadPool pool;// = new ThreadPool(10);
-    private HashMap<String, SessionRI> sessions;// = new HashMap();
-    private State subjectState;
+    private HashMap<User, SessionRI> sessions;// = new HashMap();
 
-    private ArrayList<Client> clients = new ArrayList<>();
     /**
      * Uses RMI-default sockets-based transport. Runs forever (do not
      * passivates) hence, does not need rmid (activation deamon) Constructor
@@ -31,7 +29,8 @@ public class FactoryImpl extends UnicastRemoteObject implements FactoryRI {
 
     @Override
     public boolean register(String uname, String pw) throws RemoteException {
-        if(!db.exists(uname,pw)){
+        User user = db.exists(uname, pw);
+        if (user==null) {
             db.register(uname,pw);
             return true;
         }
@@ -41,12 +40,13 @@ public class FactoryImpl extends UnicastRemoteObject implements FactoryRI {
 
     @Override
     public SessionRI login(String uname, String pw) throws RemoteException {
-        if (db.exists(uname, pw)) {
+        User user = db.exists(uname, pw);
+        if (user!=null) {
             System.out.println("Login");
-            if(!this.sessions.containsKey(uname)){
-                return new SessionImpl(db, db.getUser(uname, pw));
+            if(!this.sessions.containsKey(user)){
+                return new SessionImpl(db, user);
             } else {
-                return this.sessions.get(uname);
+                return this.sessions.get(user);
             }
         }
         return null;

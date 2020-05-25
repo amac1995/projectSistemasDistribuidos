@@ -2,6 +2,7 @@ package edu.ufp.inf.sd.rmi.project.server;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * This class simulates a DBMockup for managing users and books.
@@ -12,6 +13,8 @@ import java.util.ArrayList;
 public class DBMockup implements Serializable {
 
     private final ArrayList<User> users;// = new ArrayList();
+    private final HashMap<User, ArrayList<SubjectRI>> taskHashMap = new HashMap<>();// = new ArrayList();
+
 
     /**
      * This constructor creates and inits the database with some books and users.
@@ -29,10 +32,12 @@ public class DBMockup implements Serializable {
      * @param u username
      * @param p passwd
      */
-    public void register(String u, String p) {
-        if (!exists(u, p)) {
+    public User register(String u, String p) {
+        if (exists(u, p)==null) {
             users.add(new User(u, p));
+            return exists(u,p);
         }
+        return null;
     }
 
     /**
@@ -42,13 +47,13 @@ public class DBMockup implements Serializable {
      * @param p passwd
      * @return
      */
-    public boolean exists(String u, String p) {
+    public User exists(String u, String p) {
         for (User usr : this.users) {
             if (usr.getUsername().compareTo(u) == 0 && usr.getPassword().compareTo(p) == 0) {
-                return true;
+                return usr;
             }
         }
-        return false;
+        return null;
     }
 
     public User getUser(String u, String p){
@@ -58,5 +63,19 @@ public class DBMockup implements Serializable {
             }
         }
         return null;
+    }
+
+    public void saveTask(User user,SubjectRI subjectRI){
+        if (taskHashMap.containsKey(user)){
+            taskHashMap.get(user).add(subjectRI);
+        }else if (!(taskHashMap.containsKey(user))){
+            ArrayList<SubjectRI> taskArray = new ArrayList<>();
+            taskArray.add(subjectRI);
+            taskHashMap.put(user, taskArray);
+        }
+    }
+
+    public HashMap<User, ArrayList<SubjectRI>> returnTaskList(){
+        return this.taskHashMap;
     }
 }

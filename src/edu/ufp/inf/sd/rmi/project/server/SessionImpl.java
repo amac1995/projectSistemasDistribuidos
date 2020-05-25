@@ -3,61 +3,70 @@ package edu.ufp.inf.sd.rmi.project.server;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
-public class SessionImpl implements SessionRI, Serializable {
+//Sessão de trabalho
+public class SessionImpl implements SessionRI, Serializable{
     DBMockup db;
-    ArrayList<Task> tasksgroup = new ArrayList<>();
-    User user;
-    SubjectRI subjectRI;
+    User myUser;
+
     public SessionImpl(DBMockup db, User user) {
         this.db = db;
-        this.user = user;
+        this.myUser = user;
     }
 
-    @Override
-    public void setSubjectRI(SubjectRI subjectRI) {
-        this.subjectRI = subjectRI;
-    }
 
     @Override
-    public ArrayList<Task> listTaskGroups() throws RemoteException {
-        return tasksgroup;
-    }
-
-    @Override
-    public boolean createTaskGroup(Integer credits, String hash) throws RemoteException {
-        Task task = new Task(credits, user);
-        tasksgroup.add(task);
-        subjectRI.setState(new State(tasksgroup));
-        return true;
-    }
-
-    @Override
-    public boolean pauseTaskGroup(Integer taskID) throws RemoteException {
-        //enviar notificação a todos os users que a tarefa está em pausa
-        for (Task task : tasksgroup) {
-            if (task.getTaskID().equals(taskID)) {
-                task.setPause(!task.getPause());
-                subjectRI.setState(new State(tasksgroup));
-                return true;
+    public void listTaskGroups() throws RemoteException {
+        HashMap<User, ArrayList<SubjectRI>> taskHashMap = db.returnTaskList();
+        for (User user: taskHashMap.keySet()){
+            System.out.println("[" + user.getUsername() +"]" + ":\n ");
+            if (!taskHashMap.get(user).isEmpty()){
+                for (SubjectRI task: taskHashMap.get(user)) {
+                    task.printTaskInfo();
+                }
+            } else {
+                System.out.println("Sem tarefas.");
             }
         }
-        return false;
+    }
+
+    @Override
+    public SubjectRI createTaskGroup(Integer credits, String name, String hash) throws RemoteException {
+        try {
+            SubjectRI subjectRI = new SubjectImpl(credits, name, hash);
+            db.saveTask(myUser, subjectRI);
+            return subjectRI;
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    @Override
+    public SubjectRI joinTaskGroup(Integer taskID) throws RemoteException{
+        HashMap<User, ArrayList<SubjectRI>> taskHashMap = db.returnTaskList();
+        for (User user: taskHashMap.keySet()){
+            if (!taskHashMap.get(user).isEmpty()){
+                for(SubjectRI subjectRI:taskHashMap.get(user)){
+                    if(subjectRI.getTask().getTaskID().equals(taskID)){
+                        return subjectRI;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     @Override
     public boolean deleteTaskGroup(Integer taskID) throws RemoteException {
-        //enviar notificação a todos os users que a tarefa irá ser apagada
-        for (Task task : tasksgroup) {
-            if (task.getTaskID().equals(taskID)) {
-                tasksgroup.remove(task);
-                subjectRI.setState(new State(tasksgroup));
-                return true;
+        HashMap<User, ArrayList<SubjectRI>> taskHashMap = db.returnTaskList();
+        for (User user: taskHashMap.keySet()){
+            if (!taskHashMap.get(user).isEmpty()){
+                return taskHashMap.get(user).removeIf(task -> task.getTask().getTaskID().equals(taskID));
             }
         }
         return false;
     }
-
 
     @Override
     public void logout() throws RemoteException {
