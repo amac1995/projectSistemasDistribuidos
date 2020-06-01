@@ -11,4 +11,5 @@ public interface SessionRI extends Remote {
     public SubjectRI joinTaskGroup(Integer taskID) throws RemoteException;
     public boolean deleteTaskGroup(Integer taskID) throws RemoteException;
     public void logout() throws RemoteException;
+    public DBMockup getDb();
 }

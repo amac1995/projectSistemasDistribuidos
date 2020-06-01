@@ -10,28 +10,24 @@ import java.util.HashMap;
 
 public class FactoryImpl extends UnicastRemoteObject implements FactoryRI {
 
-    private DBMockup db;// = new DBMockup();
-    //private ThreadPool pool;// = new ThreadPool(10);
-    private HashMap<User, SessionRI> sessions;// = new HashMap();
 
-    /**
-     * Uses RMI-default sockets-based transport. Runs forever (do not
-     * passivates) hence, does not need rmid (activation deamon) Constructor
-     * must throw RemoteException due to super() export().
-     */
+    DBMockup db = DBMockup.getInstance();
+    private String subjectState;
+    //private ThreadPool pool;// = new ThreadPool(10);
+    private ArrayList<ObserverRI> observers = new ArrayList<>();
+    //private HashMap<User, SessionRI> sessions = new HashMap<>();// = new HashMap();
+
     public FactoryImpl() throws RemoteException {
-        // Invokes UnicastRemoteObject constructor which exports remote object
         super();
-        db = new DBMockup();
         //pool = new ThreadPool(10);
-        sessions = new HashMap();
+        //sessions = new HashMap();
     }
 
     @Override
     public boolean register(String uname, String pw) throws RemoteException {
         User user = db.exists(uname, pw);
-        if (user==null) {
-            db.register(uname,pw);
+        if (user == null) {
+            db.register(uname, pw);
             return true;
         }
         return false;
@@ -41,15 +37,14 @@ public class FactoryImpl extends UnicastRemoteObject implements FactoryRI {
     @Override
     public SessionRI login(String uname, String pw) throws RemoteException {
         User user = db.exists(uname, pw);
-        if (user!=null) {
+        if (user != null) {
             System.out.println("Login");
-            if(!this.sessions.containsKey(user)){
-                return new SessionImpl(db, user);
+            if (!this.db.getSessions().containsKey(user)) {
+                return new SessionImpl(user);
             } else {
-                return this.sessions.get(user);
+                return this.db.getSessions().get(user);
             }
         }
         return null;
     }
-
 }

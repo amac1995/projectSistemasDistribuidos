@@ -3,12 +3,13 @@ package edu.ufp.inf.sd.rmi.project.server;
 import edu.ufp.inf.sd.rmi.project.client.Client;
 import edu.ufp.inf.sd.rmi.project.client.ObserverRI;
 
+import java.io.Serializable;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
 //Tarefa
-public class SubjectImpl implements SubjectRI{
+public class SubjectImpl implements SubjectRI, Serializable {
 
     private State subjectState;
     private Task task;
@@ -33,7 +34,7 @@ public class SubjectImpl implements SubjectRI{
 
     @Override
     public boolean printTaskInfo() throws RemoteException {
-        if(task != null) {
+        if(this.task != null) {
             System.out.println("Tarefa ID: " + task.getTaskID() + "\n\tNome: " + task.getName() + "\n\tCreditos: " + task.getCreditos() + "\n\tEm pausa: " + task.getPause().toString());
             return true;
         }
@@ -94,7 +95,7 @@ public class SubjectImpl implements SubjectRI{
     public void notifyAllObservers() {
         for(ObserverRI obs : observers){
             try{
-                obs.update();
+                obs.updateSubject();
             } catch (RemoteException ex){
                 System.out.println(ex.toString());
             }

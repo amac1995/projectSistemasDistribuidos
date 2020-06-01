@@ -4,7 +4,7 @@ import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
-import edu.ufp.inf.sd.rmi.util.RabbitUtils;
+import edu.ufp.inf.sd.rmi.util.rabbit.RabbitUtils;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;

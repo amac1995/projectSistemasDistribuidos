@@ -5,6 +5,7 @@ import edu.ufp.inf.sd.rmi.util.rmisetup.SetupContextRMI;
 
 import javax.sound.midi.Soundbank;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -15,12 +16,16 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 public class Client extends UnicastRemoteObject implements ObserverRI {
 
     private SetupContextRMI contextRMI;
-    private State lastObserverState;
+    private String lastObserverState;
     private FactoryRI factoryRI;
     private SubjectRI subjectRI;
+    private SessionRI sessionRI;
     ArrayList<Task> taskArrayList = new ArrayList<>();
 
     public static void main(String[] args) throws RemoteException {
@@ -79,25 +84,47 @@ public class Client extends UnicastRemoteObject implements ObserverRI {
 
     private void playService() {
         try {
-            System.out.println("Insira nome de utilizador e password");
-            String user = System.console().readLine();
-            String pass = System.console().readLine();
-            SessionRI sessionRI = this.factoryRI.login(user, pass);
-            if (sessionRI != null) {
-                System.out.println("Login com sucesso");
-            } else {
-                System.out.println("Login sem sucesso");
-                System.exit(0);
+            System.out.println("Login ou registar?");
+            int opt = Integer.parseInt(System.console().readLine());
+            switch (opt) {
+                case 1:
+                    System.out.println("Insira nome de utilizador e password");
+                    String user = System.console().readLine();
+                    String pass = System.console().readLine();
+                    sessionRI = this.factoryRI.login(user, pass);
+                    if (sessionRI != null) {
+                        System.out.println("Login com sucesso");
+                    } else {
+                        System.out.println("Login sem sucesso");
+                        System.exit(0);
+                    }
+                    break;
+                case 2:
+                    System.out.println("Insira nome de utilizador e password");
+                    user = System.console().readLine();
+                    pass = System.console().readLine();
+                    if (this.factoryRI.register(user, pass)) {
+                        System.out.println("Registo com sucesso");
+                        sessionRI = this.factoryRI.login(user, pass);
+                        if (sessionRI != null) {
+                            System.out.println("Login com sucesso");
+                        } else {
+                            System.out.println("Login sem sucesso");
+                            System.exit(0);
+                        }
+                    }
             }
+            System.out.println("ID base de dados: " + sessionRI.getDb().getBDID());
             while (true) {
                 System.out.println(
                         "Escolha a opção:\n" +
                                 "1 -> Criar tarefa\n" +
-                                "2 -> Listar tarefa a trabalhar\n" +
-                                "3 -> Listar tarefas\n" +
-                                "4 -> Pausar tarefa\n" +
-                                "5 -> Apagar tarefas\n" +
-                                "6 -> Update\n");
+                                "2 -> Juntar a tarefa\n" +
+                                "3 -> Listar tarefa a trabalhar\n" +
+                                "4 -> Listar tarefas\n" +
+                                "5 -> Pausar tarefa\n" +
+                                "6 -> Apagar tarefas\n" +
+                                "7 -> Dump DB\n");
                 int input = Integer.parseInt(System.console().readLine());
                 switch (input) {
                     case 1: //"1 -> Criar tarefa\n"
@@ -107,6 +134,7 @@ public class Client extends UnicastRemoteObject implements ObserverRI {
                             String name = System.console().readLine();
                             String hash = System.console().readLine();
                             subjectRI = sessionRI.createTaskGroup(credit, name, hash);
+
                             subjectRI.attach(this);
                             System.out.println("Tarefa criada");
                         } else
@@ -140,9 +168,7 @@ public class Client extends UnicastRemoteObject implements ObserverRI {
                         System.out.println(sessionRI.deleteTaskGroup(taskid) ? "Tarefa apagada" : "Erro a apagar a tarefa");
                         break;
                     case 7: //"6 -> Update\n"
-                        if (subjectRI != null) {
-                            this.update();
-                        }
+                        sessionRI.listTaskGroups();
                         break;
                     default:
                         return;
@@ -155,12 +181,31 @@ public class Client extends UnicastRemoteObject implements ObserverRI {
         }
     }
 
+    /*@Override
+    public void updateFactory() throws RemoteException {
+        String state = factoryRI.getState();
+        System.out.println(state);
+        try {
+            JSONObject jsonObject = new JSONObject(state);
+            JSONArray values = (JSONArray) jsonObject.get("values");
+            System.out.println("A operação é :" + jsonObject.getString("operation"));
+            switch (jsonObject.getString("operation")) {
+                case "new" -> sessionRI.createTaskGroup(values.getInt(0), values.getString(1), values.getString(2));
+                case "rem" -> sessionRI.deleteTaskGroup(values.getInt(0));
+                default -> throw new IllegalStateException("Unexpected value: " + jsonObject.getString("operation"));
+            }
+            ;
+        } catch (RuntimeException e) {
+            System.out.println(" [.] " + e.toString());
+        }
+    }*/
+
     @Override
-    public void update() throws RemoteException {
-        this.lastObserverState = subjectRI.getState();
+    public void updateSubject() throws RemoteException {
+
     }
 
-    protected State getLastObserverState() {
+    protected String getLastObserverState() {
         return this.lastObserverState;
     }
 }

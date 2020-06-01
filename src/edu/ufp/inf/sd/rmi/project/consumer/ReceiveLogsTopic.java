@@ -2,7 +2,7 @@ package edu.ufp.inf.sd.rmi.project.consumer;
 
 import com.rabbitmq.client.*;
 import edu.ufp.inf.sd.rmi.project.producer.EmitLogTopic;
-import edu.ufp.inf.sd.rmi.util.RabbitUtils;
+import edu.ufp.inf.sd.rmi.util.rabbit.RabbitUtils;
 
 
 public class ReceiveLogsTopic {

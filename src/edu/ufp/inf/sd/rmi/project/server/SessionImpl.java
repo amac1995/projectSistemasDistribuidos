@@ -7,11 +7,10 @@ import java.util.HashMap;
 
 //Sessão de trabalho
 public class SessionImpl implements SessionRI, Serializable{
-    DBMockup db;
     User myUser;
+    DBMockup db = DBMockup.getInstance();
 
-    public SessionImpl(DBMockup db, User user) {
-        this.db = db;
+    public SessionImpl(User user) {
         this.myUser = user;
     }
 
@@ -34,8 +33,9 @@ public class SessionImpl implements SessionRI, Serializable{
     @Override
     public SubjectRI createTaskGroup(Integer credits, String name, String hash) throws RemoteException {
         try {
-            SubjectRI subjectRI = new SubjectImpl(credits, name, hash);
-            db.saveTask(myUser, subjectRI);
+            //SubjectRI subjectRI = new SubjectImpl(credits, name, hash);
+            SubjectRI subjectRI = db.saveTask(myUser, credits, name, hash);
+            System.out.println("New Task Created\n");
             return subjectRI;
         } catch (NullPointerException e) {
             e.printStackTrace();
@@ -71,5 +71,13 @@ public class SessionImpl implements SessionRI, Serializable{
     @Override
     public void logout() throws RemoteException {
 
+    }
+
+    public DBMockup getDb() {
+        return db;
+    }
+
+    public void setDb(DBMockup db) {
+        this.db = db;
     }
 }

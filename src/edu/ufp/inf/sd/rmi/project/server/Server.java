@@ -2,40 +2,18 @@ package edu.ufp.inf.sd.rmi.project.server;
 
 import edu.ufp.inf.sd.rmi.util.rmisetup.SetupContextRMI;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
-import java.util.Properties;
-import java.util.function.BiConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * <p>
- * Title: Projecto SD</p>
- * <p>
- * Description: Projecto apoio aulas SD</p>
- * <p>
- * Copyright: Copyright (c) 2017</p>
- * <p>
- * Company: UFP </p>
- *
- * @author Rui S. Moreira
- * @version 3.0
- */
-public class Server {
+public class Server{
 
     /**
      * Context for running a RMI Servant on a host
      */
     private SetupContextRMI contextRMI;
-    /**
-     * Remote interface that will hold reference to the Servant impl
-     */
-    private FactoryRI factoryRI;
-    private SubjectRI subjectRI;
+    //private DBMockup db;// = new DBMockup();
 
     public static void main(String[] args) {
         if (args != null && args.length < 3) {
@@ -47,11 +25,6 @@ public class Server {
             //2. ============ Rebind servant on rmiregistry ============
             hws.rebindService();
         }
-        /*try {
-            loadProperties();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
     }
 
     /**
@@ -59,7 +32,9 @@ public class Server {
      * @param args
      */
     public Server(String[] args) {
+        super();
         try {
+            //factoryRI= new FactoryImpl(this.db);
             //============ List and Set args ============
             SetupContextRMI.printArgs(this.getClass().getName(), args);
             String registryIP = args[0];
@@ -79,16 +54,16 @@ public class Server {
             //Bind service on rmiregistry and wait for calls
             if (registry != null) {
                 //============ Create Servant ============
-                factoryRI= new FactoryImpl();
-                //subjectRI= new SubjectImpl();
+                /**
+                 * Remote interface that will hold reference to the Servant impl
+                 */
+                FactoryRI factoryRI = new FactoryImpl();
                 //Get service url (including servicename)
                 String serviceUrl = contextRMI.getServicesUrl(0);
                 Logger.getLogger(this.getClass().getName()).log(Level.INFO, "going to rebind service @ {0}", serviceUrl);
 
                 //============ Rebind servant ============
-                //Naming.bind(serviceUrl, calculatorRI);
                 registry.rebind(serviceUrl, factoryRI);
-                //registry.rebind(serviceUrl, subjectRI);
                 Logger.getLogger(this.getClass().getName()).log(Level.INFO, "service bound and running. :)");
             } else {
                 //System.out.println("HelloWorldServer - Constructor(): create registry on port 1099");
