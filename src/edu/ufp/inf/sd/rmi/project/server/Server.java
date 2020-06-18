@@ -2,8 +2,11 @@ package edu.ufp.inf.sd.rmi.project.server;
 
 import edu.ufp.inf.sd.rmi.util.rmisetup.SetupContextRMI;
 
+import java.rmi.NotBoundException;
+import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -62,8 +65,18 @@ public class Server{
                 String serviceUrl = contextRMI.getServicesUrl(0);
                 Logger.getLogger(this.getClass().getName()).log(Level.INFO, "going to rebind service @ {0}", serviceUrl);
 
+                System.out.println(Arrays.toString(registry.list()));
+                try{
+                    Remote alive;
+                    do {
+                        factoryRI = (FactoryRI) registry.lookup(serviceUrl);
+                    } while (factoryRI.alive());
+                    System.out.println("Server die or not exists\n");
+                } catch (NotBoundException e) {
+                    registry.rebind(serviceUrl, factoryRI);
+                }
                 //============ Rebind servant ============
-                registry.rebind(serviceUrl, factoryRI);
+                //registry.rebind(serviceUrl, factoryRI);
                 Logger.getLogger(this.getClass().getName()).log(Level.INFO, "service bound and running. :)");
             } else {
                 //System.out.println("HelloWorldServer - Constructor(): create registry on port 1099");
