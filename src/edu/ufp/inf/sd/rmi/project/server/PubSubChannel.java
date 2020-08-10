@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeoutException;
 
+//cria o canal, no inicio usou-se
 public class PubSubChannel implements Runnable {
 
     public String channelID;

@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+//todas as infos da tarefa
 public class Task implements Serializable {
     Integer taskID;
     String name;
@@ -25,19 +26,22 @@ public class Task implements Serializable {
     Boolean pause = false;
     Boolean done;
 
-    public Task(String name, Integer creditos, String hash) {
+    public Task(String name, Integer creditos, String hash) {       //envia passe
         Random rand = new Random();
         this.taskID = rand.nextInt(100000);
-        securePassword = SCryptUtil.scrypt(hash, 16, 16, 16);
-        System.out.println(securePassword);
+        securePassword = SCryptUtil.scrypt(hash, 16, 16, 16);   //metodo hashing (SCRYPT)
+        //vou encripta-la
+        System.out.println(securePassword); //imprimo para o user ver como ficou encriptada
         this.name=name;
         this.creditos = creditos;
-        readFromFile();
+        readFromFile();     //ler todas as conbinacoes de passes no darkc0de
         subHashMissing = subHash.size() - indexHash;
-        dividInListSubHash();
+        dividInListSubHash();       //1 milhao e 500 linhas, divide em grupos de 5 mil palavras
+        //quando o cliente pede trabalho ao servidor, o servidor envia um grupo de 5 mil palavras
         done = false;
     }
 
+    //tentamos este mas a de cima e mais acessivel
     private static String get_SHA_512_SecurePassword(String passwordToHash, byte[] salt)
     {
         String generatedPassword = null;
@@ -66,6 +70,7 @@ public class Task implements Serializable {
         return salt;
     }
 
+    //devolve o grupo de 5 mil hash ao dividINLIST
     public List<String> returnSubHash(){
         List<String> stringList = new ArrayList<>();
         for (int i = 0; i < 5000; i++){
@@ -79,6 +84,7 @@ public class Task implements Serializable {
         return stringList;
     }
 
+    //devolve o ficheiro tuodo e devolve em grupos de 5 mil
     public void dividInListSubHash(){
         listSubHash = new ArrayList<>();
         while (subHashMissing!=0){

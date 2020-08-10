@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
+//cria a hash c o nome do user
 public class JWTUtil {
 
     private static String key = "SECRET_TOKEN";

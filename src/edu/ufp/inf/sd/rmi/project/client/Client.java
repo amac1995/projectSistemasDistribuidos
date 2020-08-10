@@ -26,8 +26,8 @@ public class Client extends UnicastRemoteObject {
     private FactoryRI factoryRI;
     private SessionRI sessionRI;
 
-    private Integer nThreads = 5;
-    ExecutorService pool = Executors.newFixedThreadPool(nThreads);
+    private Integer nThreads = 5;       //inicializa threads ( diz quantos podes criar)
+    ExecutorService pool = Executors.newFixedThreadPool(nThreads);  //pool, só tem 5 thread, tiro agua morre
 
     Integer currentTaskID = null;
     ArrayList<Task> taskArrayList = new ArrayList<>();
@@ -40,9 +40,9 @@ public class Client extends UnicastRemoteObject {
             //1. ============ Setup client RMI context ============
             Client hwc = new Client(args);
             //2. ============ Lookup service ============
-            hwc.lookupService();
+            hwc.lookupService();        //procura  e regista servidor
             //3. ============ Play with service ============
-            hwc.playService();
+            hwc.playService();      //onde esta o codigo tod
         }
     }
 
@@ -91,19 +91,19 @@ public class Client extends UnicastRemoteObject {
             System.out.println("Login ou registar?");
             int opt = Integer.parseInt(System.console().readLine());
             switch (opt) {
-                case 1:
+                case 1:     //login
                     System.out.println("Insira nome de utilizador e password");
-                    String user = System.console().readLine();
+                    String user = System.console().readLine();      //scanf
                     String pass = System.console().readLine();
-                    String jws = Jwts.builder()
-                            .setIssuer(user)
+                    String jws = Jwts.builder()     //em vez de passar nome e pass para servidor, envia uma hash e assim nng sabe
+                            .setIssuer(user)          //o servidor recebe, descodifica e descobre
                             .setSubject(pass)
                             .claim("name", user)
                             .claim("scope", "admins")
                             .setIssuedAt(Date.from(Instant.ofEpochSecond(1466796822L)))
                             .setExpiration(Date.from(Instant.ofEpochSecond(4622470422L)))
                             .signWith(
-                                    Keys.secretKeyFor(SignatureAlgorithm.HS512)
+                                    Keys.secretKeyFor(SignatureAlgorithm.HS512)     //HS512 - nivel seguranca
                             )
                             .compact();
                     System.out.println(jws);
@@ -116,7 +116,7 @@ public class Client extends UnicastRemoteObject {
                         System.exit(0);
                     }
                     break;
-                case 2:
+                case 2:     //registo e login
                     System.out.println("Insira nome de utilizador e password");
                     user = System.console().readLine();
                     pass = System.console().readLine();
@@ -181,11 +181,13 @@ public class Client extends UnicastRemoteObject {
                         try {
                             String securePass = sessionRI.joinTaskGroup(currentTaskID, nThreads);
                             receivePub(String.valueOf(currentTaskID));
+
+                            //cria numero de thread definidos em cima
                             for (int i = 0; i <= nThreads; i++) {
                                 Worker worker = new Worker(String.valueOf(currentTaskID), securePass, this);
                                 System.out.println("Created worked: " + i);
                                 //this.future = pool.submit(worker);
-                                pool.execute(worker);
+                                pool.execute(worker);       //adiciono a piscina toda
                             }
                         } catch (CustomException e) {
                             currentTaskID=null;
@@ -196,7 +198,7 @@ public class Client extends UnicastRemoteObject {
                             e.printStackTrace();
                         }
                         break;
-                    case 3: //"2 -> Listar tarefa a trabalhar\n"
+                    case 3: //"2 -> Listar tarefa a trabalhar\n"  //não da
                         try {
                             getCurrentTask().printTaskInfo();
                         } catch (NullPointerException e) {
@@ -206,7 +208,7 @@ public class Client extends UnicastRemoteObject {
                     case 4: //"3 -> Listar tarefas\n"
                         printTaskGroup(sessionRI.getTaskGroups());
                         break;
-                    case 5: //"4 -> Pausar tarefa\n"
+                    case 5: //"4 -> Pausar tarefa\n"   //não da (pausa na tarefa)
                         try {
                             getCurrentTask().pauseTask();
                         } catch (NullPointerException e) {
@@ -218,10 +220,10 @@ public class Client extends UnicastRemoteObject {
                         Integer taskid = Integer.parseInt(System.console().readLine());
                         System.out.println(sessionRI.deleteTaskGroup(taskid) ? "Tarefa apagada" : "Erro a apagar a tarefa");
                         break;
-                    case 7: //"5 -> Apagar tarefas\n"
+                    case 7:     //limpa terminal
                         System.out.print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
                         break;
-                    case 8: //"5 -> Apagar tarefas\n"
+                    case 8:
 
                         break;
                     default:
@@ -238,10 +240,11 @@ public class Client extends UnicastRemoteObject {
     public TaskGroupRI getCurrentTask() {
         HashMap<User, ArrayList<TaskGroupRI>> taskgroups = null;
         try {
-            taskgroups = sessionRI.getTaskGroups();
-            for (Map.Entry<User, ArrayList<TaskGroupRI>> entry : taskgroups.entrySet()) {
-                for (TaskGroupRI taskGroupRI : taskgroups.get(entry.getKey())) {
-                    for (SessionRI session : taskGroupRI.getUserInTask()) {
+            taskgroups = sessionRI.getTaskGroups();     //buscar array q guardo na taskgroup
+            for (Map.Entry<User, ArrayList<TaskGroupRI>> entry : taskgroups.entrySet()) {       //mapa para array, digo o q quero procurar
+                // e ele diz onde esta
+                for (TaskGroupRI taskGroupRI : taskgroups.get(entry.getKey())) {        //vai a todos os tg e busca todos c a mesma chave
+                    for (SessionRI session : taskGroupRI.getUserInTask()) {     //devolve todas as sessoes do taskgroup
                         if (this.sessionRI.getMyUser().getUsername().equals(session.getMyUser().getUsername())) {
                             System.out.println("Encontrei a tarefa!!!!!!!!!!!!");
                             return taskGroupRI;
@@ -256,7 +259,7 @@ public class Client extends UnicastRemoteObject {
         return null;
     }
 
-    private void printTaskGroup(HashMap<User, ArrayList<TaskGroupRI>> taskGroup) {
+    private void printTaskGroup(HashMap<User, ArrayList<TaskGroupRI>> taskGroup) {      //não usamos
         try {
             for (User user : taskGroup.keySet()) {
                 System.out.println("[" + user.getUsername() + "]" + ":\n ");
@@ -274,7 +277,8 @@ public class Client extends UnicastRemoteObject {
         }
     }
 
-    public void answerFromThread(String msg) {
+    public void answerFromThread(String msg) {      //worker acaba de trabalhar e encontra a chave avisa client q encontrou
+        //pede para fechar todos os workers
         try {
             System.out.println("[Sou client] -> " + msg);
             //getCurrentTask().finishTask();
@@ -285,14 +289,14 @@ public class Client extends UnicastRemoteObject {
         }
     }
 
-    public void stopThreads() {
+    public void stopThreads() {     //termina workers deste cliente apenas
         //future.cancel(true);
         pool.shutdown();
         try {
-            if (!pool.awaitTermination(800, TimeUnit.MILLISECONDS)) {
+            if (!pool.awaitTermination(800, TimeUnit.MILLISECONDS)) {       //pedir para terminar os threads e esperar 1s
                 pool.shutdownNow();
             }
-        } catch (InterruptedException e) {
+        } catch (InterruptedException e) {      //caso algum thread recurse terminar, termina a força
             pool.shutdownNow();
         }
         System.out.println("Os threads terminaram? -> " + pool.isTerminated());
@@ -301,7 +305,9 @@ public class Client extends UnicastRemoteObject {
         pool = Executors.newFixedThreadPool(nThreads);
     }
 
-    public void receivePub(String taskID) {
+    //rabbit - é um software de mensagens com código aberto
+    public void receivePub(String taskID) {     //rabbit publish subscrive
+        //canal para receber notificações á cerca das tarefas
         new Thread(new Runnable() {
             public void run() {
                 String channelName = new String(taskID.concat("update"));
@@ -320,6 +326,10 @@ public class Client extends UnicastRemoteObject {
                     channel.exchangeDeclare(channelName, "fanout");
                     String queueName = channel.queueDeclare().getQueue();
                     channel.queueBind(queueName, channelName, "");
+
+                    //callback - serviço em segundo plano
+                    //whatssap fechado - recebo sms na mesa
+                    //fica em segundo plano a espera de mensagens do rabbit
                     DeliverCallback deliverCallback = (consumerTag, delivery) -> {
                         String message = new String(delivery.getBody(), "UTF-8");
                         JSONObject jsonObject = new JSONObject(message);

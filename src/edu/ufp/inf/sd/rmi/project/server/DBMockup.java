@@ -6,9 +6,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
+//base de dados, tem os utilizadores, as sessoes de trabalho e as tarefas
 public class DBMockup implements Serializable{
 
-    private static DBMockup dbMockup = null;
+    private static DBMockup dbMockup = null;        //classe estatica
 
     private final ArrayList<User> users = new ArrayList<>();;// = new ArrayList();
     private HashMap<User, SessionRI> sessions = new HashMap<>();// = new HashMap();
@@ -30,6 +31,9 @@ public class DBMockup implements Serializable{
         this.taskHashMap.put(getUser("alex", "alex"), taskArray);
     }
 
+    //diz que a classe só pode ser instanciada uma unica vez e é sincronizada com todas as outras classes que a utilizam
+    //se tiver 3 servidores e o 1 instanciar esta classe, quando os outros chamarem a mesma eles vao receber exatamente a mesma copia da bd
+    //garante que todos tem os mesmos dados, um faz aleracoes e todos vem
     public synchronized static DBMockup getInstance() {
         if (dbMockup == null)
             dbMockup = new DBMockup();
@@ -61,6 +65,7 @@ public class DBMockup implements Serializable{
         return null;
     }
 
+    //guarda a tarefa na bd
     public TaskGroupRI saveTask(User user, Integer credits, String name, String hash) {
         System.out.println("BD ID -> " + System.identityHashCode(this));
         TaskGroupRI taskGroupRI = null;

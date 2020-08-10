@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 //Tarefa
+//todos os metodos para interagir c 1 tarefa
 public class TaskGroupImpl implements TaskGroupRI, Serializable {
 
     private Task task;
@@ -30,6 +31,7 @@ public class TaskGroupImpl implements TaskGroupRI, Serializable {
     }
 
     @Override
+    //imprimo todas as infos da tarefa
     public void printTaskInfo() throws RemoteException {
         if (this.task != null) {
             System.out.println("Tarefa ID: " + task.getTaskID() +
@@ -42,18 +44,21 @@ public class TaskGroupImpl implements TaskGroupRI, Serializable {
     }
 
     @Override
+    //termino a tarefa se tiver encontrado a pass
     public void finishTask() throws RemoteException {
         System.out.println("A terminar tarefa!");
         task.setDone(true);
         userInTask.clear();
         try {
-            sendUpdate(String.valueOf(this.task.taskID), "stop");
+            sendUpdate(String.valueOf(this.task.taskID), "stop"); //envia update a todos a dizer q ja foi terminada a tarefa
+            //usamos rabbit e não observer
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     @Override
+    //faz pausa na tarefa, para os cliente pararem uns minutos
     public void pauseTask() throws RemoteException {
 
         try {
@@ -71,11 +76,13 @@ public class TaskGroupImpl implements TaskGroupRI, Serializable {
     }
 
     @Override
+    //desiste da tarefa, ou vao ate ao fim ou nao começam sequer
     public boolean giveUpTask() throws RemoteException {
         return false;
     }
 
     @Override
+    //utlizador junta-se a uma tarefa ( a que estamos)
     public String joinTask(SessionRI session) throws RemoteException {
         userInTask.add(session);
         return task.getSecurePassword();
@@ -103,6 +110,8 @@ public class TaskGroupImpl implements TaskGroupRI, Serializable {
         this.userInTask = userInTask;
     }
 
+
+    //canal no rabbit para enviar atualizacoes aos clientes a cerca das tarefas
     public void sendUpdate(String taskID, String op) throws Exception {
 //        new Thread(new Runnable() {
 //            public void run() {

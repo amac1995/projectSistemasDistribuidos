@@ -15,6 +15,8 @@ public class Server{
     /**
      * Context for running a RMI Servant on a host
      */
+
+    //cria o servidor RMI
     private SetupContextRMI contextRMI;
     //private DBMockup db;// = new DBMockup();
 
@@ -69,7 +71,7 @@ public class Server{
                 try{
                     Remote alive;
                     do {
-                        factoryRI = (FactoryRI) registry.lookup(serviceUrl);
+                        factoryRI = (FactoryRI) registry.lookup(serviceUrl);        //devolve a fabrica para o clinete poder registar ou login
                     } while (factoryRI.alive());
                     System.out.println("Server die or not exists\n");
                 } catch (NotBoundException e) {

@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
-//Sessão de trabalho
+//Sessão de trabalho, onde tem todos os metodos do protocolo
 public class SessionImpl extends UnicastRemoteObject implements SessionRI, Serializable {
     User myUser;
     DBMockup db;
@@ -31,6 +31,8 @@ public class SessionImpl extends UnicastRemoteObject implements SessionRI, Seria
     }
 
     @Override
+    //cria tarefas
+    //vai a bd, procura tarefa q o user quer, procura tarefa taskid e cria tarefa e executa newtask q da trabalho aos clientes
     public TaskGroupRI createTaskGroup(Integer credits, String name, String hash) throws RemoteException {
         try {
             TaskGroupRI taskGroupRI = db.saveTask(myUser, credits, name, hash);
@@ -48,6 +50,9 @@ public class SessionImpl extends UnicastRemoteObject implements SessionRI, Seria
     }
 
     @Override
+    //junta o worker a tarefa
+    //vai a bd, procura tarefa q o user quer, procura tarefa taskid e junta-se a tarefa mas lança uma excecao se a tarefa ja tiver terminado
+    //custom exception, emvez de imprimir erro diz a terminou
     public String joinTaskGroup(Integer taskID, Integer nThreads) throws RemoteException, CustomException {
         HashMap<User, ArrayList<TaskGroupRI>> taskHashMap = db.returnTaskList();
         for (User user : taskHashMap.keySet()) {
@@ -68,6 +73,8 @@ public class SessionImpl extends UnicastRemoteObject implements SessionRI, Seria
     }
 
     @Override
+    //para tarefa
+    //vai a bd, procura tarefa q o user quer, procura tarefa taskid e termina
     public boolean stopTask(Integer taskID) throws RemoteException {
         HashMap<User, ArrayList<TaskGroupRI>> taskHashMap = db.returnTaskList();
         for (User user : taskHashMap.keySet()) {
@@ -83,11 +90,13 @@ public class SessionImpl extends UnicastRemoteObject implements SessionRI, Seria
     }
 
     @Override
+    //apaga
+    //vai a bd, procura tarefa q o user quer, procura tarefa taskid e apaga
     public boolean deleteTaskGroup(Integer taskID) throws RemoteException {
         HashMap<User, ArrayList<TaskGroupRI>> taskHashMap = db.returnTaskList();
         for (User user : taskHashMap.keySet()) {
             if (!taskHashMap.get(user).isEmpty()) {
-                return taskHashMap.get(user).removeIf(task -> task.getTask().getTaskID().equals(taskID));
+                    return taskHashMap.get(user).removeIf(task -> task.getTask().getTaskID().equals(taskID));
             }
         }
         return false;
@@ -112,12 +121,17 @@ public class SessionImpl extends UnicastRemoteObject implements SessionRI, Seria
         this.myUser = myUser;
     }
 
+
+    //cria tarefa nova, abre o canal(workqueu no rabbit) envia todas as palavas do darkc0de para os clientes
+    //assim os clientes tentam encontrar a pass orginal, dá trabalho aos clientes
     public void newTask(String taskID, List<List<String>> subHashs) throws Exception {
         new Thread(new Runnable() {
             public void run() {
                 ConnectionFactory factory = new ConnectionFactory();
                 factory.setHost("localhost");
                 System.out.println("Channel [" + taskID + "] a enviar as Hash");
+
+                //se um cliente fechar o canal o servidor fecha esse canal para todos os clientes
                 try (Connection connection = factory.newConnection()) {
                     connection.addShutdownListener(new ShutdownListener() {
                         public void shutdownCompleted(ShutdownSignalException cause) {
