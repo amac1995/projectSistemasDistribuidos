@@ -10,10 +10,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeoutException;
 
-
-// worker é um thread, esta constatemente a receber mensagens do rabbit(servidor)
-//worker esta constantemnte a tentar descodificar as hash para tentar encontrar a pass original
-//observer usamos apenas o rabbit, rabbit para tudo
 public class Worker implements Runnable {
 
     String taskID;
@@ -28,7 +24,6 @@ public class Worker implements Runnable {
     }
 
     @Override
-    //cria canal e recebe mensagens por esse canal
     public void run() {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
@@ -76,11 +71,10 @@ public class Worker implements Runnable {
     private void doWork(JSONArray jsonArray) {
         int i;
         for (i = 0; i < jsonArray.length(); i++) {
-            if (SCryptUtil.check(jsonArray.getString(i), this.securePassword)) { //verificar se hash q trabalha é a pass original, q ele tenta descobrir
-                System.out.println("Found the key: " + jsonArray.getString(i)); //se for imprime para a consola
+            if (SCryptUtil.check(jsonArray.getString(i), this.securePassword)) {
+                System.out.println("Found the key: " + jsonArray.getString(i));
                 cancel = true;
-                client.answerFromThread(jsonArray.getString(i));    //e avisa o pai de qual é a pass, passa a orginal ao pai
-                //pai sabe como a pass foi enviada, a tarefa acabou e tem de avisar o servidor
+                client.answerFromThread(jsonArray.getString(i));
             }
         }
     }

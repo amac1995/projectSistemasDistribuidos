@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/SD_Project_JWT.iml" filepath="$PROJECT_DIR$/SD_Project_JWT.iml" />
-      <module fileurl="file://$PROJECT_DIR$/maven.iml" filepath="$PROJECT_DIR$/maven.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SD_Project.iml" filepath="$PROJECT_DIR$/SD_Project.iml" />
     </modules>
   </component>
 </project>

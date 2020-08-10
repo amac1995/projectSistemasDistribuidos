@@ -2,13 +2,15 @@
   <library name="lib">
     <CLASSES>
       <root url="file://$PROJECT_DIR$/lib/javafx-sdk-14.0.1/lib" />
+      <root url="jar://$PROJECT_DIR$/lib/amqp-client-5.9.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/slf4j-api-2.0.0-alpha1.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/javax.mail.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/slf4j-simple-2.0.0-alpha1.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/json-20190722.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
       <root url="file://$PROJECT_DIR$/lib/javafx-sdk-14.0.1/lib" />
-      <root url="jar://$USER_HOME$/.ideaLibSources/amqp-client-5.9.0-sources.jar!/" />
     </SOURCES>
     <jarDirectory url="file://$PROJECT_DIR$/lib/javafx-sdk-14.0.1/lib" recursive="false" />
     <jarDirectory url="file://$PROJECT_DIR$/lib/javafx-sdk-14.0.1/lib" recursive="false" type="SOURCES" />
