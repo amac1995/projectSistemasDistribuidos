@@ -6,11 +6,13 @@ public class User implements Serializable {
     private String username;
     private String password;
     private Double credits;
+    private Integer taskscompleted;
 
     public User(String username, String password) {
         this.username = username;
         this.password = password;
         this.credits = 0.0;
+        this.taskscompleted = 0;
     }
 
     public String getUsername() {
@@ -37,11 +39,11 @@ public class User implements Serializable {
         this.credits = credits;
     }
 
+    public Integer getTaskscompleted() {
+        return taskscompleted;
+    }
 
-    @Override
-    public String toString() {
-        return "User{" +
-                "username='" + username + '\'' +
-                '}';
+    public void setTaskscompleted(Integer taskscompleted) {
+        this.taskscompleted = taskscompleted;
     }
 }

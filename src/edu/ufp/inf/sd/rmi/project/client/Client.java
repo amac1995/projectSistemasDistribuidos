@@ -1,35 +1,31 @@
 package edu.ufp.inf.sd.rmi.project.client;
 
-import com.rabbitmq.client.*;
 import edu.ufp.inf.sd.rmi.project.server.*;
 import edu.ufp.inf.sd.rmi.util.rmisetup.SetupContextRMI;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
-import org.json.JSONObject;
 
-import java.io.IOException;
+import javax.sound.midi.Soundbank;
+import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Client extends UnicastRemoteObject {
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+public class Client extends UnicastRemoteObject implements ObserverRI {
 
     private SetupContextRMI contextRMI;
+    private String lastObserverState;
     private FactoryRI factoryRI;
+    private SubjectRI subjectRI;
     private SessionRI sessionRI;
-
-    private Integer nThreads = 5;
-    ExecutorService pool = Executors.newFixedThreadPool(nThreads);
-
-    Integer currentTaskID = null;
     ArrayList<Task> taskArrayList = new ArrayList<>();
 
     public static void main(String[] args) throws RemoteException {
@@ -95,20 +91,7 @@ public class Client extends UnicastRemoteObject {
                     System.out.println("Insira nome de utilizador e password");
                     String user = System.console().readLine();
                     String pass = System.console().readLine();
-                    String jws = Jwts.builder()
-                            .setIssuer(user)
-                            .setSubject(pass)
-                            .claim("name", user)
-                            .claim("scope", "admins")
-                            .setIssuedAt(Date.from(Instant.ofEpochSecond(1466796822L)))
-                            .setExpiration(Date.from(Instant.ofEpochSecond(4622470422L)))
-                            .signWith(
-                                    Keys.secretKeyFor(SignatureAlgorithm.HS512)
-                            )
-                            .compact();
-                    System.out.println(jws);
-                    //sessionRI = this.factoryRI.login(user, pass);
-                    sessionRI = this.factoryRI.login(jws);
+                    sessionRI = this.factoryRI.login(user, pass);
                     if (sessionRI != null) {
                         System.out.println("Login com sucesso");
                     } else {
@@ -120,32 +103,16 @@ public class Client extends UnicastRemoteObject {
                     System.out.println("Insira nome de utilizador e password");
                     user = System.console().readLine();
                     pass = System.console().readLine();
-                    jws = Jwts.builder()
-                            .setIssuer(user)
-                            .setSubject(pass)
-                            .claim("name", user)
-                            .claim("scope", "admins")
-                            .setIssuedAt(Date.from(Instant.ofEpochSecond(1466796822L)))
-                            .setExpiration(Date.from(Instant.ofEpochSecond(4622470422L)))
-                            .signWith(
-                                    Keys.secretKeyFor(SignatureAlgorithm.HS512)
-                            )
-                            .compact();
-                    if (this.factoryRI.register(jws)) {
+                    if (this.factoryRI.register(user, pass)) {
                         System.out.println("Registo com sucesso");
-                    } else {
-                        System.out.println("Utilizador já registado, a entrar...");
+                        sessionRI = this.factoryRI.login(user, pass);
+                        if (sessionRI != null) {
+                            System.out.println("Login com sucesso");
+                        } else {
+                            System.out.println("Login sem sucesso");
+                            System.exit(0);
+                        }
                     }
-                    sessionRI = this.factoryRI.login(jws);
-                    if (sessionRI != null) {
-                        System.out.println("Login com sucesso");
-                    } else {
-                        System.out.println("Login sem sucesso");
-                        System.exit(0);
-                    }
-                    break;
-                default:
-                    System.out.println("Unexpected value: " + opt);
             }
             System.out.println("ID base de dados: " + sessionRI.getDb().getBDID());
             while (true) {
@@ -157,75 +124,54 @@ public class Client extends UnicastRemoteObject {
                                 "4 -> Listar tarefas\n" +
                                 "5 -> Pausar tarefa\n" +
                                 "6 -> Apagar tarefas\n" +
-                                "7 -> Limpar\n" +
-                                "8 -> Check threads\n");
+                                "7 -> Dump DB\n");
                 int input = Integer.parseInt(System.console().readLine());
                 switch (input) {
                     case 1: //"1 -> Criar tarefa\n"
-                        try {
+                        if (subjectRI == null) {
                             System.out.println("Insira o numero de creditos, nome e a hash:");
                             int credit = Integer.parseInt(System.console().readLine());
                             String name = System.console().readLine();
                             String hash = System.console().readLine();
-                            sessionRI.createTaskGroup(credit, name, hash);
+                            subjectRI = sessionRI.createTaskGroup(credit, name, hash);
 
-                            //subjectRI.attach(this);
+                            subjectRI.attach(this);
                             System.out.println("Tarefa criada");
-                        } catch (NumberFormatException e) {
-                            System.out.println("Apenas pode introduzir digitos");
-                        }
+                        } else
+                            System.out.println("[Erro] -> Já está inscrito numa tarefa.");
                         break;
-                    case 2: //"2 -> Juntar tarefa\n"
-                        currentTaskID = Integer.parseInt(System.console().readLine());
-                        //List<String> subHash = sessionRI.joinTaskGroup(taskID, nThreads);
-                        try {
-                            String securePass = sessionRI.joinTaskGroup(currentTaskID, nThreads);
-                            receivePub(String.valueOf(currentTaskID));
-                            for (int i = 0; i <= nThreads; i++) {
-                                Worker worker = new Worker(String.valueOf(currentTaskID), securePass, this);
-                                System.out.println("Created worked: " + i);
-                                //this.future = pool.submit(worker);
-                                pool.execute(worker);
-                            }
-                        } catch (CustomException e) {
-                            currentTaskID=null;
-                            System.out.println("A tarefa escolhida já foi concluida!");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        } catch (NoClassDefFoundError e) {
-                            e.printStackTrace();
-                        }
+                    case 2: //"3 -> Juntar tarefas\n"
+                        int taskID = Integer.parseInt(System.console().readLine());
+                        subjectRI = sessionRI.joinTaskGroup(taskID);
                         break;
                     case 3: //"2 -> Listar tarefa a trabalhar\n"
-                        try {
-                            getCurrentTask().printTaskInfo();
-                        } catch (NullPointerException e) {
-                            System.out.println("Não está inscrito a nenhuma tarefa.");
+                        if (subjectRI != null) {
+                            subjectRI.printTaskInfo();
+                        } else {
+                            System.out.println("[Erro] -> Não está inscrito numa tarefa.");
                         }
                         break;
                     case 4: //"3 -> Listar tarefas\n"
-                        printTaskGroup(sessionRI.getTaskGroups());
+                        sessionRI.listTaskGroups();
                         break;
                     case 5: //"4 -> Pausar tarefa\n"
-                        try {
-                            getCurrentTask().pauseTask();
-                        } catch (NullPointerException e) {
-                            System.out.println("Não está inscrito a nenhuma tarefa.");
+                        if (subjectRI != null) {
+                            subjectRI.pauseTask();
                         }
+                        System.out.println("Não está inscrito em nenhuma tarefa.");
                         break;
                     case 6: //"5 -> Apagar tarefas\n"
                         System.out.println("Insira o id da tarefa a eliminar");
                         Integer taskid = Integer.parseInt(System.console().readLine());
+                        subjectRI.detach(this);
+                        subjectRI = null;
                         System.out.println(sessionRI.deleteTaskGroup(taskid) ? "Tarefa apagada" : "Erro a apagar a tarefa");
                         break;
-                    case 7: //"5 -> Apagar tarefas\n"
-                        System.out.print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-                        break;
-                    case 8: //"5 -> Apagar tarefas\n"
-
+                    case 7: //"6 -> Update\n"
+                        sessionRI.listTaskGroups();
                         break;
                     default:
-                        System.out.println("Unexpected value: " + input);
+                        return;
                 }
 
             }
@@ -235,123 +181,31 @@ public class Client extends UnicastRemoteObject {
         }
     }
 
-    public TaskGroupRI getCurrentTask() {
-        HashMap<User, ArrayList<TaskGroupRI>> taskgroups = null;
+    /*@Override
+    public void updateFactory() throws RemoteException {
+        String state = factoryRI.getState();
+        System.out.println(state);
         try {
-            taskgroups = sessionRI.getTaskGroups();
-            for (Map.Entry<User, ArrayList<TaskGroupRI>> entry : taskgroups.entrySet()) {
-                for (TaskGroupRI taskGroupRI : taskgroups.get(entry.getKey())) {
-                    for (SessionRI session : taskGroupRI.getUserInTask()) {
-                        if (this.sessionRI.getMyUser().getUsername().equals(session.getMyUser().getUsername())) {
-                            System.out.println("Encontrei a tarefa!!!!!!!!!!!!");
-                            return taskGroupRI;
-                        }
-                    }
-
-                }
+            JSONObject jsonObject = new JSONObject(state);
+            JSONArray values = (JSONArray) jsonObject.get("values");
+            System.out.println("A operação é :" + jsonObject.getString("operation"));
+            switch (jsonObject.getString("operation")) {
+                case "new" -> sessionRI.createTaskGroup(values.getInt(0), values.getString(1), values.getString(2));
+                case "rem" -> sessionRI.deleteTaskGroup(values.getInt(0));
+                default -> throw new IllegalStateException("Unexpected value: " + jsonObject.getString("operation"));
             }
-        } catch (RemoteException e) {
-            e.printStackTrace();
+            ;
+        } catch (RuntimeException e) {
+            System.out.println(" [.] " + e.toString());
         }
-        return null;
+    }*/
+
+    @Override
+    public void updateSubject() throws RemoteException {
+
     }
 
-    private void printTaskGroup(HashMap<User, ArrayList<TaskGroupRI>> taskGroup) {
-        try {
-            for (User user : taskGroup.keySet()) {
-                System.out.println("[" + user.getUsername() + "]" + ":\n ");
-                if (!taskGroup.get(user).isEmpty()) {
-                    for (TaskGroupRI task : taskGroup.get(user)) {
-                        task.printTaskInfo();
-
-                    }
-                } else {
-                    System.out.println("Sem tarefas.");
-                }
-            }
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void answerFromThread(String msg) {
-        try {
-            System.out.println("[Sou client] -> " + msg);
-            //getCurrentTask().finishTask();
-            sessionRI.stopTask(currentTaskID);
-            currentTaskID = null;
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void stopThreads() {
-        //future.cancel(true);
-        pool.shutdown();
-        try {
-            if (!pool.awaitTermination(800, TimeUnit.MILLISECONDS)) {
-                pool.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            pool.shutdownNow();
-        }
-        System.out.println("Os threads terminaram? -> " + pool.isTerminated());
-        System.out.println("Os threads desligaram? -> " + pool.isShutdown());
-        pool=null;
-        pool = Executors.newFixedThreadPool(nThreads);
-    }
-
-    public void receivePub(String taskID) {
-        new Thread(new Runnable() {
-            public void run() {
-                String channelName = new String(taskID.concat("update"));
-                ConnectionFactory factory = new ConnectionFactory();
-                factory.setHost("localhost");
-                Connection connection = null;
-                try {
-                    connection = factory.newConnection();
-                    connection.addShutdownListener(new ShutdownListener() {
-                        public void shutdownCompleted(ShutdownSignalException cause) {
-                            System.out.println(cause);
-                            Thread.currentThread().interrupt();
-                        }
-                    });
-                    Channel channel = connection.createChannel();
-                    channel.exchangeDeclare(channelName, "fanout");
-                    String queueName = channel.queueDeclare().getQueue();
-                    channel.queueBind(queueName, channelName, "");
-                    DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-                        String message = new String(delivery.getBody(), "UTF-8");
-                        JSONObject jsonObject = new JSONObject(message);
-                        System.out.println("Mensagem de :" + jsonObject.getString("operation") + " recebida.");
-                        switch (jsonObject.getString("operation")) {
-                            case "info":
-                                System.out.println("Mensagem recebida: " + jsonObject.get("values"));
-                                break;
-                            case "pause":
-                                System.out.println("Mensagem de pausa: " + jsonObject.get("values"));
-                                break;
-                            case "resume":
-                                System.out.println("Mensagem de resumo: " + jsonObject.get("values"));
-                                break;
-                            case "stop":
-                                stopThreads();
-                                Thread.currentThread().interrupt();
-                                break;
-                            default:
-                                throw new IllegalStateException("Unexpected value: " + jsonObject.getString("operation"));
-                        }
-                        ;
-                    };
-                    channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {
-                    });
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (TimeoutException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
-
+    protected String getLastObserverState() {
+        return this.lastObserverState;
     }
 }

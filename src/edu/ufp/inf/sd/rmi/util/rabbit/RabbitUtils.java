@@ -1,6 +1,5 @@
 package edu.ufp.inf.sd.rmi.util.rabbit;
 
-
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -26,7 +25,8 @@ public class RabbitUtils {
         factory.setPassword(passwd);
 
         //Create a channel which offers most of the API methods MAIL_TO_ADDR rabbitmq broker
-        return factory.newConnection();
+        Connection connection=factory.newConnection();
+        return connection;
     }
 
     /**
@@ -45,14 +45,16 @@ public class RabbitUtils {
         factory.setPassword(passwd);
 
         //Create a channel which offers most of the API methods MAIL_TO_ADDR rabbitmq broker
-        return factory.newConnection();
+        Connection connection=factory.newConnection();
+        return connection;
     }
 
     /**
      * Create a channel to the rabbitmq server/broker
      */
     public static Channel createChannel2Server(Connection connection) throws IOException, TimeoutException {
-        return connection.createChannel();
+        Channel channel=connection.createChannel();
+        return channel;
     }
 
     /**
